@@ -2,7 +2,8 @@ import os, string, time
 import sb.io, sb.logging, sb.cfg, sb.errors
 
 HOME = os.path.expanduser("~") # cross-plattform safe
-NOW = time.gmtime() # only use in main process, value may be different in sub-processes
+# NOW = time.gmtime() # only use in main process, value may be different in sub-processes
+NOW = time.localtime() # only use in main process, value may be different in sub-processes
 PID = os.getpid()   # only use in main process, value may be different in sub-processes
 
 class Settings:
@@ -19,7 +20,8 @@ class Settings:
         self.timeout = None
         self.cpu_quota = None
         self.mem_limit = None
-        self.results = os.path.join("results","${TOOL}","${RUNID}","${FILENAME}")
+        # self.results = os.path.join("results","${TOOL}","${RUNID}","${FILENAME}")
+        self.results = os.path.join("results","${TOOL}","${RUNID}","${RELDIR}","${FILENAME}")
         self.log = os.path.join("results","logs","${RUNID}.log")
         self.json = False
         self.sarif = False

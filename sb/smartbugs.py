@@ -1,8 +1,6 @@
 import glob, os, operator, pathlib
 import sb.tools, sb.solidity, sb.tasks, sb.docker, sb.analysis, sb.colors, sb.logging, sb.cfg, sb.io, sb.settings, sb.errors
 
-
-
 def collect_files(patterns):
     files = []
     for root,spec in patterns:
@@ -23,15 +21,14 @@ def collect_files(patterns):
             absfn = os.path.normpath(os.path.abspath(root_relfn))
             if os.path.isfile(absfn) and absfn[-4:] in (".hex", ".sol"):
                 files.append( (absfn,relfn) )
-
     return files
 
 def collect_files_in_directory(directories):
-    print("Directory: ", directories)
     files = []
     for dir in directories:
         path = pathlib.Path(dir)
         for relfn in path.rglob("*"):
+            relfn = os.path.normpath(relfn)
             absfn = os.path.normpath(os.path.abspath(relfn))
             if os.path.isfile(absfn) and absfn[-4:] in (".sol"):
                 files.append((absfn, relfn))

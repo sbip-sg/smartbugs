@@ -25,7 +25,6 @@ def execute(task):
 
     # create result dir if it doesn't exista
     os.makedirs(task.rdir, exist_ok=True)
-    print("== Result dir: " + str(task.rdir))
     if not os.path.isdir(task.rdir):
         raise sb.errors.SmartBugsError(f"Cannot create result directory {task.rdir}")
 

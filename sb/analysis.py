@@ -23,8 +23,9 @@ def task_log_dict(task, start_time, duration, exit_code, log, output, docker_arg
 
 def execute(task):
 
-    # create result dir if it doesn't exist
+    # create result dir if it doesn't exista
     os.makedirs(task.rdir, exist_ok=True)
+    print("== Result dir: " + str(task.rdir))
     if not os.path.isdir(task.rdir):
         raise sb.errors.SmartBugsError(f"Cannot create result directory {task.rdir}")
 
@@ -78,7 +79,7 @@ def execute(task):
         sb.io.write_txt(fn_tool_log, tool_log)
     if tool_output:
         sb.io.write_bin(fn_tool_output, tool_output)
-        
+
     # Parse output of tool
     if task.settings.json or task.settings.sarif:
         parsed_result = sb.parsing.parse(task_log, tool_log, tool_output)
@@ -87,14 +88,14 @@ def execute(task):
         # Format parsed result as sarif
         if task.settings.sarif:
             sarif_result = sb.sarif.sarify(task_log["tool"], parsed_result["findings"])
-            sb.io.write_json(fn_sarif_output, sarif_result)       
+            sb.io.write_json(fn_sarif_output, sarif_result)
 
     return duration
 
 
 
 def analyser(logqueue, taskqueue, tasks_total, tasks_started, tasks_completed, time_completed):
-        
+
     def pre_analysis():
         with tasks_started.get_lock():
             tasks_started_value = tasks_started.value + 1
@@ -177,4 +178,3 @@ def run(tasks, settings):
 
     finally:
         sb.logging.stop(logqueue)
-

@@ -35,6 +35,11 @@ def cli_args(defaults):
         type=str,
         help=f"glob pattern specifying the files to analyse{fmt_default(defaults.files)}"
             "; may be prefixed by 'DIR:' for search relative to DIR")
+    input.add_argument("-d", "--directories",
+        metavar="DIRECTORIES",
+        nargs="+",
+        type=str,
+        help=f"directories containing files to be analysed{fmt_default(defaults.directories)}")
     input.add_argument("--runtime",
         action="store_true",
         default=None,

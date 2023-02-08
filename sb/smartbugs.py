@@ -1,4 +1,4 @@
-import glob, os, operator
+import glob, os, operator, pathlib
 import sb.tools, sb.solidity, sb.tasks, sb.docker, sb.analysis, sb.colors, sb.logging, sb.cfg, sb.io, sb.settings, sb.errors
 
 
@@ -26,7 +26,16 @@ def collect_files(patterns):
 
     return files
 
-
+def collect_files_in_directory(directories):
+    print("Directory: ", directories)
+    files = []
+    for dir in directories:
+        path = pathlib.Path(dir)
+        for relfn in path.rglob("*"):
+            absfn = os.path.normpath(os.path.abspath(relfn))
+            if os.path.isfile(absfn) and absfn[-4:] in (".sol"):
+                files.append((absfn, relfn))
+    return files
 
 def collect_tasks(files, tools, settings):
     used_rdirs = set()
@@ -137,7 +146,12 @@ def main(settings: sb.settings.Settings):
         sb.logging.message(sb.colors.warning("Warning: no tools selected!"))
 
     sb.logging.message("Collecting files ...")
-    files = collect_files(settings.files)
+    if len(settings.files) > 0:
+        files = collect_files(settings.files)
+    elif len(settings.directories) > 0:
+        files = collect_files_in_directory(settings.directories)
+    else:
+        files = []
     sb.logging.message(f"{len(files)} files to analyse")
 
     sb.logging.message("Assembling tasks ...")

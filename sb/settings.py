@@ -10,6 +10,7 @@ class Settings:
     def __init__(self):
         self.frozen = False
         self.files = []
+        self.directories = []
         self.runtime = False
         self.tools = []
         self.runid = "${YEAR}${MONTH}${DAY}_${HOUR}${MIN}"
@@ -24,7 +25,7 @@ class Settings:
         self.sarif = False
         self.quiet = False
 
-        
+
     def freeze(self):
         if self.frozen:
             return
@@ -64,7 +65,7 @@ class Settings:
         reldir = os.path.dirname(relfn)
         filebase,fileext = os.path.splitext(filename)
         fileext = fileext.replace('.','')
-        try:        
+        try:
             return self.results.substitute(
                 TOOL=toolid, MODE=toolmode,
                 ABSDIR=absdir, RELDIR=reldir,
@@ -128,6 +129,9 @@ class Settings:
                     root_specs.append((root,spec))
                 setattr(self, k, root_specs)
 
+            elif k in ("directories"):
+                setattr(self, k, v)
+
             elif k in ("runtime", "overwrite", "quiet", "json", "sarif"):
                 try:
                     assert isinstance(v, bool)
@@ -161,7 +165,7 @@ class Settings:
             else:
                 raise sb.errors.SmartBugsError(f"Invalid key '{k}' (in {settings}).")
 
-    
+
     def dict(self):
         d = {}
         for k,v in self.__dict__.items():

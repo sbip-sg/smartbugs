@@ -79,15 +79,14 @@ def execute(task):
     if tool_output:
         sb.io.write_bin(fn_tool_output, tool_output)
 
-    # Parse output of tool
-    if task.settings.json or task.settings.sarif:
-        parsed_result = sb.parsing.parse(task_log, tool_log, tool_output)
-        sb.io.write_json(fn_parser_output,parsed_result)
+    # Parse output of tool to json by default
+    parsed_result = sb.parsing.parse(task_log, tool_log, tool_output)
+    sb.io.write_json(fn_parser_output,parsed_result)
 
-        # Format parsed result as sarif
-        if task.settings.sarif:
-            sarif_result = sb.sarif.sarify(task_log["tool"], parsed_result["findings"])
-            sb.io.write_json(fn_sarif_output, sarif_result)
+    # Format parsed result as sarif
+    if task.settings.sarif:
+        sarif_result = sb.sarif.sarify(task_log["tool"], parsed_result["findings"])
+        sb.io.write_json(fn_sarif_output, sarif_result)
 
     return duration
 

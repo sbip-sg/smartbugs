@@ -1,5 +1,5 @@
 import multiprocessing, random, time, datetime, os, random
-import sb.logging, sb.colors, sb.docker, sb.cfg, sb.io, sb.parsing, sb.sarif, sb.errors
+import sb.logging, sb.colors, sb.docker, sb.cfg, sb.io, sb.parsing, sb.sarif, sb.errors, sb.label
 
 
 
@@ -23,7 +23,7 @@ def task_log_dict(task, start_time, duration, exit_code, log, output, docker_arg
 
 def execute(task):
 
-    # create result dir if it doesn't exista
+    # create result dir if it doesn't exist
     os.makedirs(task.rdir, exist_ok=True)
     if not os.path.isdir(task.rdir):
         raise sb.errors.SmartBugsError(f"Cannot create result directory {task.rdir}")
@@ -78,6 +78,13 @@ def execute(task):
         sb.io.write_txt(fn_tool_log, tool_log)
     if tool_output:
         sb.io.write_bin(fn_tool_output, tool_output)
+
+    # Read bug labels
+    bug_labels = sb.label.read_bug_label(task.absfn)
+    for label in bug_labels:
+        print("File:", label.filename,
+              ", line:", label.line_number,
+              ", bug type:", label.bug_category)
 
     # Parse output of tool to json by default
     parsed_result = sb.parsing.parse(task_log, tool_log, tool_output)

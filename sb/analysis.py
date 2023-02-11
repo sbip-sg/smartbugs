@@ -79,13 +79,6 @@ def execute(task):
     if tool_output:
         sb.io.write_bin(fn_tool_output, tool_output)
 
-    # Read bug labels
-    bug_labels = sb.label.read_bug_label(task.absfn)
-    for label in bug_labels:
-        print("File:", label.filename,
-              ", line:", label.line_number,
-              ", bug type:", label.bug_category)
-
     # Parse output of tool to json by default
     parsed_result = sb.parsing.parse(task_log, tool_log, tool_output)
     sb.io.write_json(fn_parser_output,parsed_result)
@@ -94,6 +87,13 @@ def execute(task):
     if task.settings.sarif:
         sarif_result = sb.sarif.sarify(task_log["tool"], parsed_result["findings"])
         sb.io.write_json(fn_sarif_output, sarif_result)
+
+    # Compare result with bug labels
+    print("  Finding bug labels...")
+    bug_labels = sb.label.read_bug_label(task.absfn)
+    for label in bug_labels:
+        print("  Line: " + str(label.line_number) +
+              ", bug type: ", str(label.bug_category))
 
     return duration
 

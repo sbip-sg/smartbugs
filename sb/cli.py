@@ -62,6 +62,10 @@ def cli_args(defaults):
         type=str,
         metavar="MEM",
         help=f"memory quota for docker containers, like 512m or 1g{fmt_default(defaults.mem_limit)}")
+    exec.add_argument("--local",
+        action="store_true",
+        default=None,
+        help=f"run analysis tools locally, not using Docker{fmt_default(defaults.local)}")
 
     output = parser.add_argument_group("output options")
     output.add_argument("--runid",

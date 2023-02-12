@@ -20,6 +20,7 @@ class Settings:
         self.timeout = None
         self.cpu_quota = None
         self.mem_limit = None
+        self.local = False
         # self.results = os.path.join("results","${TOOL}","${RUNID}","${FILENAME}")
         self.results = os.path.join("results","${TOOL}","${RUNID}","${RELDIR}","${FILENAME}")
         self.log = os.path.join("results","logs","${RUNID}.log")
@@ -134,7 +135,7 @@ class Settings:
             elif k in ("directories"):
                 setattr(self, k, v)
 
-            elif k in ("runtime", "overwrite", "quiet", "json", "sarif"):
+            elif k in ("runtime", "overwrite", "quiet", "json", "sarif", "local"):
                 try:
                     assert isinstance(v, bool)
                     setattr(self, k, v)

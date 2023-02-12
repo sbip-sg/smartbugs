@@ -20,6 +20,27 @@ def task_log_dict(task, start_time, duration, exit_code, log, output, docker_arg
     }
 
 
+def perform_analysis(task):
+    if task.settings.local:
+        print("Run LOCALLY")
+    else:
+        # Run by Docker
+        # Docker causes spurious connection errors
+        # try three times before giving up
+        print("Run by Docker")
+        for i in range(3):
+            try:
+                start_time = time.time()
+                exit_code, tool_log, tool_output, docker_args = sb.docker.execute(task)
+                duration = time.time() - start_time
+                break
+            except sb.errors.SmartBugsError as e:
+                if i == 2:
+                    raise
+                # wait 3 to 8 minutes
+            time.sleep(random.randint(3,8)*60)
+        return (start_time, duration, exit_code, tool_log, tool_output, docker_args)
+
 
 def execute(task):
 
@@ -56,20 +77,10 @@ def execute(task):
         if os.path.exists(fn):
             raise sb.errors.SmartBugsError(f"Cannot clear old output {fn}")
 
+    print("Task: " + str(task))
+
     # perform analysis
-    # Docker causes spurious connection errors
-    # try three times before giving up
-    for i in range(3):
-        try:
-            start_time = time.time()
-            exit_code,tool_log,tool_output,docker_args = sb.docker.execute(task)
-            duration = time.time() - start_time
-            break
-        except sb.errors.SmartBugsError as e:
-            if i == 2:
-                raise
-        # wait 3 to 8 minutes
-        time.sleep(random.randint(3,8)*60)
+    (start_time, duration, exit_code, tool_log, tool_output, docker_args) = perform_analysis(task)
 
     # write result to files
     task_log = task_log_dict(task, start_time, duration, exit_code, tool_log, tool_output, docker_args)

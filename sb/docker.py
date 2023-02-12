@@ -8,7 +8,7 @@ _client = None
 def client():
     global _client
     if not _client:
-        try:    
+        try:
             _client = docker.from_env()
             _client.info()
         except Exception:

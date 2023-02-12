@@ -1,4 +1,4 @@
-import multiprocessing, random, time, datetime, os, random
+import multiprocessing, random, time, datetime, os, random, subprocess
 import sb.logging, sb.colors, sb.docker, sb.cfg, sb.io, sb.parsing, sb.sarif, sb.errors, sb.label
 
 
@@ -22,16 +22,20 @@ def task_log_dict(task, start_time, duration, exit_code, log, output, docker_arg
 
 def perform_analysis(task):
     if task.settings.local:
+        # Run the analysis tool locally
         print("Run LOCALLY")
+        result = subprocess.run()
     else:
-        # Run by Docker
-        # Docker causes spurious connection errors
-        # try three times before giving up
+        # Run tool using Docker. Docker causes spurious connection errors.
+        # Try three times before giving up
         print("Run by Docker")
         for i in range(3):
             try:
                 start_time = time.time()
                 exit_code, tool_log, tool_output, docker_args = sb.docker.execute(task)
+                print("TOOL_LOG: " + str(tool_log))
+                print("TOOL_OUTPUT: " + str(tool_output))
+                print("DOCKER_ARGS: " + str(docker_args))
                 duration = time.time() - start_time
                 break
             except sb.errors.SmartBugsError as e:

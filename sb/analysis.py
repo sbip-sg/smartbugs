@@ -29,7 +29,8 @@ def perform_analysis(task):
         tool_path = os.path.join(sb.cfg.TOOLS_HOME, task.tool.id, task.tool.bin)
         task_entry_point = task.tool.entrypoint(filename, timeout, tool_path)
         print("Task Entry Point:", task_entry_point)
-        # result = subprocess.run(task.)
+        # result = subprocess.run(task_entry_point)
+        result = os.system(task_entry_point)
     else:
         # Run tool using Docker. Docker causes spurious connection errors.
         # Try three times before giving up

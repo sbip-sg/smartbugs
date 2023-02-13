@@ -24,15 +24,11 @@ def perform_analysis(task):
     if task.settings.local:
         # Run the analysis tool locally
         print("Run LOCALLY")
-        print("  Task setting: " + str(task.settings))
         filename = task.absfn
-        print("  Filename:", filename)
         timeout = task.settings.timeout or "0"
-        print("  Timeout:", timeout)
-        task_cmd = task.tool.command(filename, timeout, "")
-        print("  Task Command:", task_cmd)
-        task_entry_point = task.tool.entrypoint(filename, timeout, "/sb/bin")
-        print("  Task Entry Point:", task_entry_point)
+        tool_path = os.path.join(sb.cfg.TOOLS_HOME, task.tool.id, task.tool.bin)
+        task_entry_point = task.tool.entrypoint(filename, timeout, tool_path)
+        print("Task Entry Point:", task_entry_point)
         # result = subprocess.run(task.)
     else:
         # Run tool using Docker. Docker causes spurious connection errors.
@@ -42,9 +38,6 @@ def perform_analysis(task):
             try:
                 start_time = time.time()
                 exit_code, tool_log, tool_output, docker_args = sb.docker.execute(task)
-                print("TOOL_LOG: " + str(tool_log))
-                print("TOOL_OUTPUT: " + str(tool_output))
-                print("DOCKER_ARGS: " + str(docker_args))
                 duration = time.time() - start_time
                 break
             except sb.errors.SmartBugsError as e:
@@ -89,8 +82,6 @@ def execute(task):
             pass
         if os.path.exists(fn):
             raise sb.errors.SmartBugsError(f"Cannot clear old output {fn}")
-
-    print("Task: " + str(task))
 
     # perform analysis
     (start_time, duration, exit_code, tool_log, tool_output, docker_args) = perform_analysis(task)

@@ -9,7 +9,6 @@ FIELDS = ("id","mode","image","name","origin","version","info","parser",
 class Tool():
 
     def __init__(self, cfg):
-        print("TOOL CFG:", cfg)
         for k in FIELDS:
             v = cfg.get(k)
             if v is not None:

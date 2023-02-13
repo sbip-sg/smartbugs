@@ -1,4 +1,4 @@
-import multiprocessing, random, time, datetime, os, random, subprocess
+import multiprocessing, random, time, datetime, os, random, subprocess, shlex
 import sb.logging, sb.colors, sb.docker, sb.cfg, sb.io, sb.parsing, sb.sarif, sb.errors, sb.label
 
 
@@ -29,8 +29,9 @@ def perform_analysis(task):
         tool_path = os.path.join(sb.cfg.TOOLS_HOME, task.tool.id, task.tool.bin)
         task_entry_point = task.tool.entrypoint(filename, timeout, tool_path)
         print("Task Entry Point:", task_entry_point)
-        # result = subprocess.run(task_entry_point)
-        result = os.system(task_entry_point)
+        command = shlex.split(task_entry_point)
+        print("Command:", command)
+        result = subprocess.run(command)
     else:
         # Run tool using Docker. Docker causes spurious connection errors.
         # Try three times before giving up

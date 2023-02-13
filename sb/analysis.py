@@ -24,7 +24,14 @@ def perform_analysis(task):
     if task.settings.local:
         # Run the analysis tool locally
         print("Run LOCALLY")
-        result = subprocess.run()
+        print("  Task setting: " + str(task.settings))
+        filename = task.absfn
+        print("  Filename:", filename)
+        timeout = task.settings.timeout or "0"
+        print("  Timeout:", timeout)
+        task_cmd = task.tool.command(filename, timeout, "")
+        print("  Task Command:", task_cmd)
+        # result = subprocess.run(task.)
     else:
         # Run tool using Docker. Docker causes spurious connection errors.
         # Try three times before giving up

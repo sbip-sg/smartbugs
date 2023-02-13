@@ -31,6 +31,8 @@ def perform_analysis(task):
         print("  Timeout:", timeout)
         task_cmd = task.tool.command(filename, timeout, "")
         print("  Task Command:", task_cmd)
+        task_entry_point = task.tool.entrypoint(filename, timeout, "/sb/bin")
+        print("  Task Entry Point:", task_entry_point)
         # result = subprocess.run(task.)
     else:
         # Run tool using Docker. Docker causes spurious connection errors.

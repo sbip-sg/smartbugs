@@ -9,6 +9,7 @@ FIELDS = ("id","mode","image","name","origin","version","info","parser",
 class Tool():
 
     def __init__(self, cfg):
+        print("TOOL CFG:", cfg)
         for k in FIELDS:
             v = cfg.get(k)
             if v is not None:
@@ -41,7 +42,7 @@ class Tool():
                 k = f"_{k}"
                 v = string.Template(v) if v else None
             setattr(self, k, v)
-                
+
         for k in ("id", "mode"):
             if not getattr(self, k):
                 raise sb.errors.InternalError(f"Tool: Field '{k}' missing.\n{cfg}")
@@ -59,6 +60,7 @@ class Tool():
 
 
     def command(self, filename, timeout, bin):
+        print("CALL command")
         try:
             return self._command.substitute(FILENAME=filename, TIMEOUT=timeout, BIN=bin) if self._command else None
         except KeyError as e:

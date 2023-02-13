@@ -82,6 +82,8 @@ def __docker_args(task, sbdir):
             args[k] = v
     filename = f"/sb/{os.path.split(task.absfn)[1]}" # path in Linux Docker image
     timeout = task.settings.timeout or "0"
+    task_cmd = task.tool.command(filename, timeout, "/sb/bin")
+    print("DOCKER TASK CMD:", task_cmd)
     args['command'] = task.tool.command(filename, timeout, "/sb/bin")
     args['entrypoint'] = task.tool.entrypoint(filename, timeout, "/sb/bin")
     return args
@@ -89,8 +91,10 @@ def __docker_args(task, sbdir):
 
 
 def execute(task):
+    print("DOCKER TASK:", task)
     sbdir = __docker_volume(task)
     args = __docker_args(task, sbdir)
+    print("DOCKER ARGS:", args)
     exit_code,logs,output,container = None,[],None,None
     try:
         container = client().containers.run(**args)

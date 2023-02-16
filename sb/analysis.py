@@ -1,6 +1,5 @@
-import multiprocessing, random, time, datetime, os, random, subprocess, shlex
+import multiprocessing, random, time, datetime, os, random, subprocess, shlex, solc_detect, sys
 import sb.logging, sb.colors, sb.docker, sb.cfg, sb.io, sb.parsing, sb.sarif, sb.errors, sb.label
-
 
 
 def task_log_dict(task, start_time, duration, exit_code, log, output, docker_args):
@@ -20,18 +19,60 @@ def task_log_dict(task, start_time, duration, exit_code, log, output, docker_arg
     }
 
 
+def install_solc_maybe(version):
+    """Install a new Solc compiler for a given version using solc-select.
+
+    The $HOME folder of  solc-select is `smartbugs/venv`.
+    """
+    # Check current Solc version
+    version = str(version).strip()
+    result = subprocess.run(['solc', '--version'],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    current_version = result.stdout.decode("utf-8")
+    # print("Current version:", current_version)
+    if version in current_version:
+        return
+
+    # Install the required version
+    result = subprocess.run(['solc-select', 'versions'],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    installed_versions = result.stdout.decode("utf-8")
+    print("Installed versions: ", installed_versions)
+    if not(version in installed_versions):
+        subprocess.run(['solc-select', 'install', version],
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    # Configure the required version
+    subprocess.run(['solc-select', 'use', version],
+                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    # Verify Solc version
+    result = subprocess.run(['solc', '--version'],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    current_version = result.stdout.decode("utf-8")
+    if not(version in current_version):
+        print("Unable to install the required Solc:", version)
+        sys.exit()
+
+
 def perform_analysis(task):
     if task.settings.local:
         # Run the analysis tool locally
         print("Run LOCALLY")
         filename = task.absfn
         timeout = task.settings.timeout or "0"
+        print("Test case: " + filename)
+        pragma = solc_detect.find_pragma_solc_version(filename)
+        print("Solidity pragma version:", pragma)
+        best_version = solc_detect.find_best_solc_version_for_pragma(pragma)
+        print("Best version to be installed:", best_version)
+        install_solc_maybe(best_version)
         tool_path = os.path.join(sb.cfg.TOOLS_HOME, task.tool.id, task.tool.bin)
         task_entry_point = task.tool.entrypoint(filename, timeout, tool_path)
         print("Task Entry Point:", task_entry_point)
         command = shlex.split(task_entry_point)
         print("Command:", command)
-        result = subprocess.run(command)
+        # result = subprocess.run(command)
     else:
         # Run tool using Docker. Docker causes spurious connection errors.
         # Try three times before giving up

@@ -10,4 +10,7 @@ pip install --upgrade pip
 pip install wheel
 
 # install the packages needed by smartbugs
-pip install pyyaml colorama requests semantic_version docker py-cpuinfo
+pip install pyyaml colorama requests semantic_version docker py-cpuinfo solc_select
+
+# Install SBIP packages
+pip install git+https://github.com/sbip-sg/solc-detect.git@main#egg=solc_detect

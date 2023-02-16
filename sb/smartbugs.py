@@ -4,15 +4,15 @@ import sb.tools, sb.solidity, sb.tasks, sb.docker, sb.analysis, sb.colors, sb.lo
 def collect_files(patterns):
     files = []
     for root,spec in patterns:
-
-        if spec.endswith(".txt"):
-            # No globbing, spec is a file specifying a 'dataset'
-            contracts = sb.io.read_lines(spec)
+        if spec.endswith(".sbd"):
+            contracts = []
+            for sbdfile in glob.glob(spec, recursive=True):
+            	contracts.extend(sb.io.read_lines(sbdfile))
         elif root:
             try:
                 contracts = glob.glob(spec, root_dir=root, recursive=True)
             except TypeError:
-                raise sb.errors.SmartBugsError(f"{root}:{spec}: colons in file patterns only supported for python>=3.10")
+                raise sb.errors.SmartBugsError(f"{root}:{spec}: colons in file patterns only supported for Python>=3.10")
         else: # avoid root_dir, compatibility with python<3.10
             contracts = glob.glob(spec, recursive=True)
 
@@ -95,10 +95,13 @@ def collect_tasks(files, tools, settings):
         is_byc = absfn[-4:]==".hex" and not (absfn[-7:-4]==".rt" or settings.runtime)
         is_rtc = absfn[-4:]==".hex" and     (absfn[-7:-4]==".rt" or settings.runtime)
 
-        pragma = None
+        contract = os.path.basename(absfn)[:-4]
+        pragma,contractnames = None,[]
         if is_sol:
             prg = sb.io.read_lines(absfn)
-            pragma = sb.solidity.get_pragma(prg)
+            pragma,contractnames = sb.solidity.get_pragma_contractnames(prg)
+            if settings.main and contract not in contractnames:
+                exceptions.append(f"Contract '{contract}' not found in {absfn}")
 
         for tool in sorted(tools, key=operator.attrgetter("id", "mode")):
             if ((is_sol and tool.mode=="solidity") or

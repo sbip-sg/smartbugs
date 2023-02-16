@@ -38,22 +38,22 @@ that analyse blockchain programs for weaknesses and other properties.
 |      | version | Solidity | bytecode | runtime code |
 | :--- | :--- | :---: | :---: | :--: |
 | [ConFuzzius](https://github.com/christoftorres/ConFuzzius) | #4315fb7 v0.0.1 | :heavy_check_mark: |                    |                    |
-| [Conkas](https://github.com/nveloso/conkas)          | #6aee098 | :heavy_check_mark: |                    | :heavy_check_mark: |
+| [Conkas](https://github.com/smartbugs/conkas)        | #4e0f256 | :heavy_check_mark: |                    | :heavy_check_mark: |
 | [Ethainter](https://zenodo.org/record/3760403)               |  |                    |                    | :heavy_check_mark: |
 | [eThor](https://secpriv.wien/ethor)           | 2021 (CCS 2020) |                    |                    | :heavy_check_mark: |
-| [HoneyBadger](https://github.com/christoftorres/HoneyBadger) |  | :heavy_check_mark: |                    | :heavy_check_mark: |
+| [HoneyBadger](https://github.com/smartbugs/HoneyBadger) | #e2faeb5 | :heavy_check_mark: |                    | :heavy_check_mark: |
 | [MadMax](https://github.com/nevillegrech/MadMax) | #6e9a6e9     |                    |                    | :heavy_check_mark: |
 | [Maian](https://github.com/smartbugs/MAIAN)          | #4bab09a | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
 | [Manticore](https://github.com/trailofbits/manticore)   | 0.3.7 | :heavy_check_mark: |                    |                    |
-| [Mythril](https://github.com/ConsenSys/mythril)        | 0.23.15 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
-| [Osiris](https://github.com/christoftorres/Osiris)           |  | :heavy_check_mark: |                    | :heavy_check_mark: |
+| [Mythril](https://github.com/ConsenSys/mythril)       | 0.23.15 | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| [Osiris](https://github.com/smartbugs/Osiris)        | #fa19079 | :heavy_check_mark: |                    | :heavy_check_mark: |
 | [Oyente](https://github.com/smartbugs/oyente)        | #480e725 | :heavy_check_mark: |                    | :heavy_check_mark: |
 | [Pakala](https://github.com/palkeo/pakala)   | #c84ef38 v1.1.10 |                    |                    | :heavy_check_mark: |
 | [Securify](https://github.com/eth-sri/securify)              |  | :heavy_check_mark: |                    | :heavy_check_mark: |
-| [sFuzz](https://github.com/duytai/sFuzz)              | #48934c0 (2019-03-01) | :heavy_check_mark: |  |  |
+| [sFuzz](https://github.com/duytai/sFuzz) | #48934c0 (2019-03-01) | :heavy_check_mark: |  |  |
 | [Slither](https://github.com/crytic/slither)                 |  | :heavy_check_mark: |                    |                    |
 | [Smartcheck](https://github.com/smartdec/smartcheck)         |  | :heavy_check_mark: |                    |                    |
-| [Solhint](https://github.com/protofire/solhint)         | 2.1.0 | :heavy_check_mark: |                    |                    |
+| [Solhint](https://github.com/protofire/solhint)         | 3.3.8 | :heavy_check_mark: |                    |                    |
 | [teEther](https://github.com/nescio007/teether)      | #04adf56 |                    |                    | :heavy_check_mark: |
 | [Vandal](https://github.com/usyd-blockchain/vandal)  | #d2b0043 |                    |                    | :heavy_check_mark: |
 
@@ -112,13 +112,13 @@ SmartBugs provides a command-line interface. Run it without arguments for a shor
 
 ```console
 ./smartbugs
-usage: smartbugs [-c FILE] [-t TOOL [TOOL ...]] [-f PATTERN [PATTERN ...]] [--runtime]
+usage: smartbugs [-c FILE] [-t TOOL [TOOL ...]] [-f PATTERN [PATTERN ...]] [--main] [--runtime]
                  [--processes N] [--timeout N] [--cpu-quota N] [--mem-limit MEM]
                  [--runid ID] [--results DIR] [--log FILE] [--overwrite] [--json] [--sarif] [--quiet] 
                  [--version] [-h]
 ...
 ```
-For details, see [SmartBugs' wiki](https://github.com/smartbugs/smartbugs/wiki).
+For details, see [SmartBugs' wiki](https://github.com/smartbugs/smartbugs/wiki/The-command-line-interface).
 
 **Example:** To analyse the Solidity files in the `samples` directory with Mythril, use the command
 
@@ -126,13 +126,12 @@ For details, see [SmartBugs' wiki](https://github.com/smartbugs/smartbugs/wiki).
 ./smartbugs -t mythril -f samples/*.sol
 ```
 
-By default, the results are placed in a local directory `results`.
+By default, the results are placed in the local directory `results`.
 
 ### Utility programs
 
-**`reparse`** can be used to parse the analysis results anew, without rerunning
-the analyses. This may be useful either when you forgot to specify the option `--json` or `--sarif` during analysis, or when you want to parse the analysis
-results with an updated parser.
+**`reparse`** can be used to parse analysis results and extract relevant information, without rerunning the analysis.
+This may be useful either when you forgot to specify the option `--json` or `--sarif` during analysis, or when you want to parse old analysis results with an updated parser.
 
 ```console
 ./reparse
@@ -148,11 +147,15 @@ usage: results2csv [-h] [-p] [-v] [-f FIELD [FIELD ...]] [-x FIELD [FIELD ...]] 
 ...
 ```
 
-The following commands analyse `simple_dao.sol` with all available tools and write the parsed output to `results.csv`. The option `--json` tells SmartBugs to write the parsed output to json files (one per contract). `results2csv` collects the outputs in directory `results` and writes one line per analysis task to 
+The following commands analyse `SimpleDAO.sol` with all available tools and write the parsed output to `results.csv`.
+`reparse` is necessary in this example, since `smartbugs` is called without the options `--json` and `--sarif`, so SmartBugs doesn't parse during the analysis.
+`results2csv` collects the outputs in the folder `results` and writes for each analysed contract one line of comma-separated values to standard output (redirected to `results.csv`).
+The option `-p` tells `results2csv` to format the lists of findings, errors etc. as Postgres arrays; without the option, the csv file is suitable for spreadsheet programs.
 
 ```console
-./smartbugs -t all -f samples/simple_dao.sol --json
-./results2csv results > results.csv
+./smartbugs -t all -f samples/SimpleDAO.sol
+./reparse results
+./results2csv -p results > results.csv
 ```
 
 ## Further Information

@@ -40,6 +40,10 @@ def cli_args(defaults):
         nargs="+",
         type=str,
         help=f"directories containing files to be analysed{fmt_default(defaults.directories)}")
+    input.add_argument("--main",
+        action="store_true",
+        default=None,
+        help=f"if the Solidity file contains a contract named like the file, analyse this contract only{fmt_default('all contracts')}")
     input.add_argument("--runtime",
         action="store_true",
         default=None,

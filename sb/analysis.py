@@ -131,7 +131,6 @@ def execute(task):
 
     # write result to files
     task_log = task_log_dict(task, start_time, duration, exit_code, tool_log, tool_output, docker_args)
-    sb.io.write_json(fn_task_log, task_log)
     if tool_log:
         sb.io.write_txt(fn_tool_log, tool_log)
     if tool_output:
@@ -152,6 +151,9 @@ def execute(task):
     for label in bug_labels:
         print("  Line: " + str(label.line_number) +
               ", bug type: ", str(label.bug_category))
+
+    # Write to fn_task_log last, to indicate that this task is done
+    sb.io.write_json(fn_task_log, task_log)
 
     return duration
 

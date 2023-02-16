@@ -12,6 +12,7 @@ class Settings:
         self.frozen = False
         self.files = []
         self.directories = []
+        self.main = False
         self.runtime = False
         self.tools = []
         self.runid = "${YEAR}${MONTH}${DAY}_${HOUR}${MIN}"
@@ -82,12 +83,11 @@ class Settings:
             raise sb.errors.InternalError("Frozen settings cannot be updated")
         if not settings:
             return
-
         if isinstance(settings, str):
             s = sb.io.read_yaml(settings)
-        elif isinstance(settings, dict):
-            s = settings
         else:
+            s = settings
+        if not isinstance(s, dict):
             raise sb.errors.SmartBugsError(f"Settings cannot be updated by objects of type '{type(settings).__name__}'")
 
         for k,v in s.items():
@@ -135,7 +135,7 @@ class Settings:
             elif k in ("directories"):
                 setattr(self, k, v)
 
-            elif k in ("runtime", "overwrite", "quiet", "json", "sarif", "local"):
+            elif k in ("main", "runtime", "overwrite", "quiet", "json", "sarif", "local"):
                 try:
                     assert isinstance(v, bool)
                     setattr(self, k, v)

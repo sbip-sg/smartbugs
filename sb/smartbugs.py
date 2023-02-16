@@ -3,7 +3,7 @@ import sb.tools, sb.solidity, sb.tasks, sb.docker, sb.analysis, sb.colors, sb.lo
 
 def collect_files(patterns):
     files = []
-    for root,spec in patterns:
+    for root, spec in patterns:
         if spec.endswith(".sbd"):
             contracts = []
             for sbdfile in glob.glob(spec, recursive=True):
@@ -157,5 +157,6 @@ def main(settings: sb.settings.Settings):
     sb.logging.message("Assembling tasks ...")
     tasks = collect_tasks(files, tools, settings)
     sb.logging.message(f"{len(tasks)} tasks to execute")
+    sb.logging.message("Running analyzers locally ...")
 
     sb.analysis.run(tasks, settings)

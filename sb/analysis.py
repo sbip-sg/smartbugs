@@ -27,7 +27,8 @@ def install_solc_maybe(version):
     # Check current Solc version
     version = str(version).strip()
     result = subprocess.run(['solc', '--version'],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
     current_version = result.stdout.decode("utf-8")
     # print("Current version:", current_version)
     if version in current_version:
@@ -35,20 +36,24 @@ def install_solc_maybe(version):
 
     # Install the required version
     result = subprocess.run(['solc-select', 'versions'],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
     installed_versions = result.stdout.decode("utf-8")
-    print("Installed versions: ", installed_versions)
     if not(version in installed_versions):
+        print("Installing Solc", version)
         subprocess.run(['solc-select', 'install', version],
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                       stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE)
 
     # Configure the required version
     subprocess.run(['solc-select', 'use', version],
-                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                   stdout=subprocess.PIPE,
+                   stderr=subprocess.PIPE)
 
     # Verify Solc version
     result = subprocess.run(['solc', '--version'],
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
     current_version = result.stdout.decode("utf-8")
     if not(version in current_version):
         print("Unable to install the required Solc:", version)
@@ -58,25 +63,28 @@ def install_solc_maybe(version):
 def perform_analysis(task):
     if task.settings.local:
         # Run the analysis tool locally
-        print("Run LOCALLY")
         filename = task.absfn
         timeout = task.settings.timeout or "0"
-        print("Test case: " + filename)
+        main = 1 if task.settings.main else 0
         pragma = solc_detect.find_pragma_solc_version(filename)
         print("Solidity pragma version:", pragma)
         best_version = solc_detect.find_best_solc_version_for_pragma(pragma)
-        print("Best version to be installed:", best_version)
         install_solc_maybe(best_version)
         tool_path = os.path.join(sb.cfg.TOOLS_HOME, task.tool.id, task.tool.bin)
-        task_entry_point = task.tool.entrypoint(filename, timeout, tool_path)
+        task_entry_point = task.tool.entrypoint(filename, timeout, tool_path, main)
         print("Task Entry Point:", task_entry_point)
         command = shlex.split(task_entry_point)
-        print("Command:", command)
-        # result = subprocess.run(command)
+        # print("Command:", command)
+        start_time = time.time()
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        duration = time.time() - start_time
+        tool_log = result.stdout
+        docker_args = None
+        exit_code = result.returncode
+        return (start_time, duration, exit_code, tool_log, tool_output, docker_args)
     else:
         # Run tool using Docker. Docker causes spurious connection errors.
         # Try three times before giving up
-        print("Run by Docker")
         for i in range(3):
             try:
                 start_time = time.time()
@@ -88,6 +96,9 @@ def perform_analysis(task):
                     raise
                 # wait 3 to 8 minutes
             time.sleep(random.randint(3,8)*60)
+        print("== TOOL LOG: ", tool_log)
+        print("== TOOL OUTPUT: ", tool_output)
+        print("== EXIT CODE: ", exit_code)
         return (start_time, duration, exit_code, tool_log, tool_output, docker_args)
 
 
